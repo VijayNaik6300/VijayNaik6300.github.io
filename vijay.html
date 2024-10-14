@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Form Data Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Load Chart.js -->
+</head>
+<body>
+    <h1>Google Form Data Chart</h1>
+    
+    <canvas id="myChart" width="400" height="200"></canvas> <!-- Canvas for Chart.js -->
+
+    <script>
+        // URL to fetch the CSV data from Google Sheets (replace YOUR-SHEET-ID with the actual ID)
+        const googleSheetURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vS2jQCckeNQBWp4h_HM-703NDKM1cTosQSt5nsji2pXjaF-sgXA1NHrc4JzqWbq5aTD7krWhDH7h6vB/pubhtml';
+
+        // Function to fetch and parse the CSV data
+        async function fetchGoogleSheetData() {
+            const response = await fetch(googleSheetURL);
+            const data = await response.text(); // Get the CSV as text
+            return parseCSV(data); // Parse the CSV and return the result
+        }
+
+        // Function to parse CSV data into arrays
+        function parseCSV(data) {
+            const rows = data.split('\n').slice(1); // Split rows and skip the header
+            const labels = [];
+            const dataset = [];
+
+            rows.forEach(row => {
+                const cols = row.split(','); // Split columns
+                labels.push(cols[0]);        // First column as labels (e.g., Name, Item)
+                dataset.push(parseFloat(cols[1])); // Second column as data (e.g., Votes, Quantity)
+            });
+
+            return { labels, dataset }; // Return an object with labels and data
+        }
+
+        // Function to render the chart using Chart.js
+        function renderChart(labels, dataset) {
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'bar', // Change this to 'pie', 'line', etc. for different chart types
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Google Form Data',
+                        data: dataset,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Fetch the data and render the chart
+        fetchGoogleSheetData().then(({ labels, dataset }) => {
+            renderChart(labels, dataset); // Pass the parsed data to the chart renderer
+        }).catch(error => console.error('Error fetching or parsing data:', error));
+
+    </script>
+</body>
+</html>
